@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devsecops-app
+  namespace: devsecops
+  labels:
+    app: devsecops-app
+spec:
+  type: ClusterIP
+  selector:
+    app: devsecops-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

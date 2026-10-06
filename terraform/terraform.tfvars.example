@@ -1,0 +1,2 @@
+github_repo       = "your-username/devsecops-pipeline"
+api_allowed_cidrs = ["203.0.113.10/32"] # your public IP
