@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # upload SARIF to the GitHub Security tab
-  id-token: write          # OIDC to AWS (no long-lived keys)
 
 env:
   AWS_REGION: ap-south-1
@@ -27,7 +25,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install -r requirements-dev.txt
+      - run: "pip install --only-binary :all: -r requirements-dev.txt"
       - run: pytest
       - uses: actions/upload-artifact@v4
         with:
@@ -50,7 +48,7 @@ jobs:
           python-version: "3.12"
       - name: Bandit (Python SAST)
         run: |
-          pip install bandit==1.7.9
+          pip install --only-binary :all: bandit==1.7.9
           bandit -r app -ll
       - name: SonarQube scan (blocks on failed quality gate)
         uses: SonarSource/sonarqube-scan-action@v4
@@ -84,6 +82,9 @@ jobs:
   build-and-scan:
     needs: [code-quality, dependency-scan]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # upload SARIF to the GitHub Security tab
     outputs:
       image-tag: ${{ env.IMAGE_TAG }}
     steps:
@@ -124,6 +125,9 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production   # add required reviewers in repo settings for a manual approval
+    permissions:
+      contents: read
+      id-token: write          # OIDC to AWS (no long-lived keys)
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4

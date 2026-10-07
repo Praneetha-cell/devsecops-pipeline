@@ -49,9 +49,11 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+              ephemeral-storage: 64Mi
             limits:
               cpu: 500m
               memory: 256Mi
+              ephemeral-storage: 256Mi
           readinessProbe:
             httpGet:
               path: /healthz
@@ -69,4 +71,5 @@ spec:
               mountPath: /tmp
       volumes:
         - name: tmp
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 64Mi
