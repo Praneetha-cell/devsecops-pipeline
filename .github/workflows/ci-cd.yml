@@ -122,7 +122,8 @@ jobs:
   # ---------- 5. Push (only after every gate is green) + deploy ----------
   deploy:
     needs: build-and-scan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Deploy only runs when the repo variable DEPLOY_ENABLED is set to 'true' (AWS must be set up first)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: production   # add required reviewers in repo settings for a manual approval
     permissions:
