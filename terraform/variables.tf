@@ -25,6 +25,5 @@ variable "github_repo" {
 
 variable "api_allowed_cidrs" {
   type        = list(string)
-  description = "CIDRs allowed to reach the public EKS API endpoint. Restrict this to your IP."
-  default     = ["0.0.0.0/0"]
+  description = "CIDRs allowed to reach the public EKS API endpoint. No default on purpose: set it explicitly in terraform.tfvars. GitHub-hosted runners use wide, changing IP ranges, so for the CI deploy job use a self-hosted runner with a fixed IP, or accept a wider range knowingly."
 }

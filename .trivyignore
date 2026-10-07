@@ -1,0 +1,19 @@
+# Accepted findings. Every entry needs a reason. Review these periodically.
+
+# AWS-0104: EKS node security group allows egress to 0.0.0.0/0.
+# Comes from the terraform-aws-modules/eks default "egress_all" rule. Worker nodes
+# need outbound access to pull images from ECR and reach AWS APIs. A production
+# setup would replace this with VPC endpoints (ECR, S3, STS) and tighter egress rules.
+AWS-0104
+
+# AWS-0040: EKS API endpoint has public access enabled.
+# Intentional for this demo: the GitHub Actions runner runs kubectl against the cluster
+# over the internet. The allowed CIDRs have no default and must be set in terraform.tfvars.
+# A production setup would disable public access and deploy from a private/self-hosted runner.
+AWS-0040
+
+# AWS-0041: EKS API public access CIDRs include 0.0.0.0/0.
+# The module's default is open, but this project passes var.api_allowed_cidrs, which has
+# no default and must be set to a specific range (your IP) in terraform.tfvars.
+# Trivy cannot see the real value during a scan, so the module default is flagged.
+AWS-0041
