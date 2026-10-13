@@ -92,3 +92,39 @@ kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
 - Pin GitHub Actions to commit SHAs for stricter supply-chain security.
 - `ignore-unfixed: true` keeps the gate from blocking on CVEs with no available patch; remove it for a stricter gate.
 - Possible extensions: image signing with cosign, SBOM generation (`trivy image --format cyclonedx`), OPA/Kyverno admission policies.
+
+## Proof it works
+
+### 1. Vulnerable code is blocked
+A pull request that downgraded `gunicorn` to 21.2.0 failed the Trivy dependency scan, and GitHub disabled the Merge button.
+
+![Blocked pull request](docs/screenshots/01-blocked-pr.png)
+![Trivy findings](docs/screenshots/02-trivy-cves.png)
+
+### 2. Clean code passes every gate
+Tests, Bandit, SonarQube Cloud quality gate, Trivy scans and the Docker build all pass. The deploy job is skipped until AWS is configured.
+
+![Green pull request checks](docs/screenshots/03-green-checks.png)
+
+### 3. Kubernetes deployment (local kind cluster)
+The app runs as 2 replicas with a restricted pod security profile, read-only filesystem, non-root user and a network policy.
+
+![Pods running](docs/screenshots/04-pods.png)
+
+### 4. Monitoring with Prometheus and Grafana
+The app exposes `/metrics`. Prometheus scrapes it through a ServiceMonitor, Grafana shows requests per second, p95 latency, error ratio and pods up, and alert rules (AppDown, HighErrorRate, HighLatencyP95) are loaded.
+
+![Grafana dashboard](docs/screenshots/05-grafana.png)
+
+## Run it locally (Windows, free)
+1. Start Docker Desktop and install `kind`, `kubectl` and `helm` (`winget install Kubernetes.kind Kubernetes.kubectl Helm.Helm`).
+2. `kind create cluster --name devsecops`
+3. `powershell -ExecutionPolicy Bypass -File .\scripts\local-k8s.ps1`
+4. `kubectl -n devsecops port-forward svc/devsecops-app 18080:80`
+5. `kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80` and open http://localhost:3000 (admin / admin12345, local demo only).
+6. `.\scripts\traffic.ps1 -Errors` to generate traffic.
+7. Clean up: `kind delete cluster --name devsecops`
+
+## Status
+- Done and tested: CI security gates, branch protection, Docker image, local Kubernetes, Prometheus and Grafana.
+- Written but not applied: AWS infrastructure (Terraform, ECR, EKS) and the cloud deploy job, to avoid cloud cost. Set the `DEPLOY_ENABLED` variable and `AWS_ROLE_ARN` secret after running Terraform to enable it.
